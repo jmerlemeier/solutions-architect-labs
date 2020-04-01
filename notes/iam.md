@@ -6,14 +6,23 @@
 3. IAM users sign-in link, you can 'Customize' and use an alias. 
 4. Set-up MFA (Virtual with Google Authenticator App)
 5. Create Groups and Users
-   	- Have company create an AWS account (root level user).
+   	- Have company create an AWS account (root level user, */* permissions).
     - Immediately create IAM group for each department.
     - Create 1 Policy and assign to 1 group, repeat for all.
     - Create new IAM users and assign each to their perspective groups.
 
 ## Users
-* ACCESS KEY and SECRET ACCESS KEY keep private; give access to account.
+* NOT PASSWORDS -- ACCESS KEY ID and SECRET ACCESS KEYs keep private; allow AWS access via APIs and CLI. Programmatic access.
 * Console Password: Used to login to Console.
+* Users begin with NO permissions
 
 ## Roles
 Allow one AWS Service to use another AWS Service. 
+
+## Tips
+* Set up MFA on root account.
+* Create and customize password rotation policies.
+
+------------------------------------------------------------------------------------------
+
+## Create Billing Alarm
