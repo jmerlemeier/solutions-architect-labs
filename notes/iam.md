@@ -26,3 +26,5 @@ Allow one AWS Service to use another AWS Service.
 ------------------------------------------------------------------------------------------
 
 ## Create Billing Alarm
+1. Login to AWS Console.
+2. CloudWatch service, the Billing Alarm create an SNS Topic (way of emailing you when goes oer a threshold).
