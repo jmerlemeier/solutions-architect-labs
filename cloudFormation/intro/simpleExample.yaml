@@ -4,6 +4,7 @@ Resources:
     Properties:
       InstanceType: t2.micro
       ImageId: ami-467ca739 # Amazon Linux AMI in N.Virginia
+      SubnetId: subnet-10951649
       Tags:
         - Key: Name
           Value: A simple example
