@@ -3,8 +3,5 @@ Resources:
     Type: AWS::EC2::Instance
     Properties:
       InstanceType: t2.micro
-      ImageId: ami-467ca739 # Amazon Linux AMI in N.Virginia
-      SubnetId: subnet-10951649
-      Tags:
-        - Key: Name
-          Value: A simple example
+      ImageId: ami-0ce21b51cb31a48b8 # Amazon Linux AMI in Oregon
+      SubnetId: subnet-05c2ca11c857bf90c
