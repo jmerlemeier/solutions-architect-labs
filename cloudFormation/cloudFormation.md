@@ -3,6 +3,7 @@
 ## Overview
 Deploy? Need Servers in Datacenters - took weeks to months.
     The Cloud: provisioning a server in minutes!
+It is hitting the AWS APIs 
 
 ### New Problem
 * Configuring servers
@@ -80,6 +81,94 @@ Resources:
 3. Updated 
 
 ### REMOVE the stack
+
 1. Actions
 2. Delete Stack, will see 'DELETE_IN_PROGRESS'
 3. Simple. 
+
+-----------------------------------------------------------
+
+### Notes with Stephanie
+
+* Template can be used to create and number of stacks
+* it is a constructor function. 
+* CloudFormation is a function
+* Template has parameters
+
+parameters
+resources is the work
+!Ref is used to go reference a variable
+
+Template can have outputs. What values do I want to make available in my region. 
+Templates are reusable to make multiple stacks.
+
+Example: I make my Networking Space.
+1. Here is the VPC ID, ect ect ect 
+2. Export contents to be used elsewhere.
+
+CloudFormation is an AWS Service meets language.
+
+### Stacks
+* The results of whatever happened in this template. 
+* NOT the DS stack
+* It knows: Metadata, creation date, name, what template used to create it, parameter values, what resources created by stack, the events that happened while those resources were created, Outputs.
+
+Templates can get long
+* Multiple resources: make an instance, make an S3 bucket, make a role.
+* DS graph under the hood?
+
+### Vocab
+* Template: .yaml or .json text file, blueprint of end state.
+* Stacks: CF execites template and creates stack. The stack is a provisione instance of the template.
+* Change Set: prior to updating a stack, create change set which allows me to see how changes will impact resources - great for live systems to prevent data loss.
+
+-------------------------------------------------------------------
+
+## Writing Template
+* Resources it the only required section.
+  * Logial ID for REF inside template
+  * Type: 
+  * Properties
+
+## EC2
+``` 
+Resources:
+  MyEC2Instance:
+    Type: AWS::EC2::Instance
+    Properties:
+      ImageID: ami-45434534
+      InstanceType: t2.micro
+```
+
+## S3
+```
+Resources:
+  MyS3Bucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: julieBucket
+      AccessControl: PublicRead
+      WebsiteConfiguration:
+        IndexDocument: index.html
+```
+
+## Security Group
+```
+Resources:
+  MySecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Enable SSH access via port 22
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+        FromPort:'22'
+        ToPort: '22'
+        Cidrlp:0.0.0.0/0
+```
+
+## Intrinsic functions
+YAML
+`!Join [ delimiter, [ comma-delimited list of values ]]
+
+`!Join[ ":", [a, b, c] ]`
+
