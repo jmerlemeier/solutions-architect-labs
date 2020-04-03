@@ -1,0 +1,25 @@
+Resources:
+      Type: AWS::IAM::Role
+      Properties:
+        Path:
+        AssumeRolePolicyDocument: 
+        Policies:
+          - 
+           PolicyName: "root"
+           PolicyDocument:
+             Version: "2012-10-17"
+             Statement:
+                - 
+                  Effect: "Allow"
+                  Action: "*"
+                  Resource: "*"
+
+# Type: AWS::IAM::AccessKey
+# Type: AWS::IAM::Group
+# Type: AWS::IAM::InstanceProfile
+# Type: AWS::IAM::ManagedPolicy
+# Type: AWS::IAM::Policy
+# Type: AWS::IAM::Role
+# Type: AWS::IAM::ServiceLinkedRole
+# Type: AWS::IAM::User
+# Type: AWS::IAM::UserToGroupAddition

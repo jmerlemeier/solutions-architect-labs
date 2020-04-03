@@ -165,3 +165,10 @@ Resources:
         ToPort: '22'
         Cidrlp:0.0.0.0/0
 ```
+
+## Intrinsic functions
+YAML
+`!Join [ delimiter, [ comma-delimited list of values ]]
+
+`!Join[ ":", [a, b, c] ]`
+

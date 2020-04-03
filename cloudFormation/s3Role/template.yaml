@@ -2,7 +2,10 @@ Resources:
   MyS3Bucket:
     Type: AWS::S3::Bucket
     Properties:
-      BucketName: julieBucket
+      BucketName: juliebucketerlemeier88
       AccessControl: PublicRead
       WebsiteConfiguration:
         IndexDocument: index.html
+
+# Type: AWS::S3::AccessPoint
+# Type: AWS::S3::Bucket Policy
