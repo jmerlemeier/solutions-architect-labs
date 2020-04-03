@@ -1,0 +1,37 @@
+# Always either making an obj or list item. 
+
+Resources:
+  MyS3Bucket: # creating a bucket with CloudFormation
+    Type: AWS::S3::Bucket 
+    Properties:
+      BucketName: julie-bucket-cloud-f
+      AccessControl: PublicRead
+      WebsiteConfiguration:
+        IndexDocument: index.html
+
+  JulieRampUpRoleCloudF: #creating a role with CloudFormation
+    Type: AWS::IAM::Role
+    Properties: 
+      RoleName: JulieRampUpRoleCloudF
+      Description: 'Julies practice IAM role, week1'
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Principal:
+              AWS: 'arn:aws:iam::494090490970:root'
+            Action:
+              - 'sts:AssumeRole'
+      ManagedPolicyArns: # function-like
+        - arn:aws:iam::842337631775:policy/AssumeRole
+      MaxSessionDuration: 3600 #1hr in secs
+      Path: /
+      Policies: # INLINE. 
+        - PolicyName: AccessONLYBucketinTemplate
+          PolicyDocument:
+            Version: 2012-10-17
+            Statement:
+              - Effect: Allow
+                Action: 's3:*'
+                Resource: # Mini function, will return certain values once created. What values does this return and how do I get to them?
+                  - !GetAtt MyS3Bucket.Arn # we need the ARN
