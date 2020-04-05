@@ -9,10 +9,10 @@ Resources:
       WebsiteConfiguration:
         IndexDocument: index.html
 
-  JulieRampUpRoleCloudF: #creating a role with CloudFormation
+  JulieRampUpRole: #creating a role with CloudFormation
     Type: AWS::IAM::Role
     Properties: 
-      RoleName: JulieRampUpRoleCloudF
+      RoleName: JulieRampUpRole
       Description: 'Julies practice IAM role, week1'
       AssumeRolePolicyDocument:
         Version: 2012-10-17
@@ -26,7 +26,7 @@ Resources:
         - arn:aws:iam::842337631775:policy/AssumeRole
       MaxSessionDuration: 3600 #1hr in secs
       Path: /
-      Policies: # INLINE. 
+      Policies: # INLINE, only applies specifically with role.
         - PolicyName: AccessONLYBucketinTemplate
           PolicyDocument:
             Version: 2012-10-17
@@ -35,3 +35,16 @@ Resources:
                 Action: 's3:*'
                 Resource: # Mini function, will return certain values once created. What values does this return and how do I get to them?
                   - !GetAtt MyS3Bucket.Arn # we need the ARN
+                  - !Sub '${MyS3Bucket.Arn}/*'
+              - Effect: Allow
+                Action: 's3:ListAllMyBuckets'
+                Resource: # Mini function, will return certain values once created. What values does this return and how do I get to them?
+                  - '*' # we need the ARN
+
+
+
+
+# The bucket itself arn:aws:s3:::julie-bucket-cloud-f
+
+# The things in my bucket, new resource
+# arn:aws:s3:::julie-bucket-cloud-f/*
