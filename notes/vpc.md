@@ -74,20 +74,42 @@
 
 9.  Provision EC2 instances (one with private subnet, and one with public subnet). 
     - Click on 'EC2', 'launch instance', Amazon Linux 2 AMI, t2.micro.
-    - Configure with your VPC and Public Subnet.
+    - Configure with your VPC and Public Subnet (Img.1).
+    - Storage stays default (no changes here)
     - Tags -- Name: WebServer01
-    - Configure Security Groups
+    - Configure Security Groups (Img.2)
       - Create a NEW Security Group
       - Name: WebDMZ
       - Description: WedDMZ
-      - Add Rule
-        - Add 5 Inbound Rules (see image below)
-        - All ICMP - IPv4
-        - HTTP
-        - SSH
-        - MySQL/Aurora
+      - Add Rule, HTTP (Img.2)
       - Review and Launch
       - Create a NEW Key Pair
         - Name: MyNewKP
         - Download
       - Launch
+
+### Img.1 Configure Instance Details
+![Configure Instances](../assets/ec2Public.png)
+
+### Img.2 Configure Security Group
+![Configure Security Group](./../assets/ec2Public-securitygroup.png)
+
+### Img.3 My New Key Pair
+![key pair](../assets/MyNewKP.png)
+
+---
+
+10.   Launch an instance in private subnet (like step 9, but notice key differences).
+    - Click on 'EC2', 'launch instance', Amazon Linux 2 AMI, t2.micro.
+    - Configure with your VPC and _private_ Subnet.
+    - Storage stays default (no changes here)
+    - Tags -- Name: DBServer
+    - Configure Security Groups
+      - Select _Existing_ Security Group
+      - Select the _default_ Security Group
+      - Review and Launch
+      - Select _Existing_ Key Pair
+        - Name: MyNewKP
+      - Launch  
+
+---
