@@ -1,8 +1,6 @@
 #Procedure for AWS VPC
 
-## Overview
-
-## Procedure
+## PART 1
 
 1. Choose correct region.
    
@@ -113,3 +111,37 @@
       - Launch  
 
 ---
+
+11. Go to Terminal and access Public WebServer01
+    - In AWS Console, EC2, copy public IP address for Public Instance (example: 34.221.27.168).
+    - Open Terminal
+      - cd Downloads/
+      - `$ chmod 400 MyNewKP.pem`
+      - `$ ssh ec2-user@34.221.27.168 -i MyNewKP.pem`
+      - type 'yes' when asks of sure want to continue connecting.
+      - enter
+      - NOW SSHed into EC2 instance.
+      - `$sudo su` to elevate privledges to root.
+
+### So far...
+![VPC image](../assets/vpc-image.png)
+
+---
+
+## PART 2
+We have no way of connecting to our Private Instance, so let's do that. 
+Keep in mind that by default security groups do not allow access to each other. We cannot SSH from WebServer to DBServer because 2 different security groups. 
+
+1. Make a new DB Security Group.
+   - Name: julieDBSG
+   - Description: whatever you like
+   - VPC: your VPC
+
+2. Add Rules
+   - Question: "What do we want to be able to communicate to EC2 instances inside this security group?"
+   - Answer: We want to ping EC2 instances inside julieDBSG from our WebDMZ Security Group.
+     - `All ICMP-IPv4` -- `10.0.1.0/24`
+     - `HTTP`
+     - `HTTPS`
+     - `SSH`
+     - `MYSQL/Aurora`
