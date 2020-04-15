@@ -1,6 +1,4 @@
-# Always either making an obj or list item. 
-
-Resources:
+Resources: # Always either making an obj or list item. 
   MyS3Bucket: # creating a bucket with CloudFormation
     Type: AWS::S3::Bucket 
     Properties:
