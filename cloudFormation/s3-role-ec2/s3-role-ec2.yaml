@@ -4,9 +4,10 @@ Description: Creates public/private instances and SGs within a pre-built VPC.
 # ----------------- TO DO ----------------------
 
 # [x] 2 EC2 instances- public jumpbox, and private webserver. 
-# [ ] use cfn-init on the private instance
+# [x] use cfn-init on the private instance
 # [x] Create IAM role for EC2
 # [x] Create EC2 instance profile for private instance
+# [x] Test - should see file from bucket on EBS Vol
 
 # stretch goal: parameters file which you can use to pass the subnet ids for the EC2 instances
 
@@ -36,6 +37,7 @@ Resources:
       IamInstanceProfile: !Ref InstanceProfile #Allows downloading from S3
       UserData: 
         Fn::Base64: !Sub | 
+          #! /usr/bin/env bash
           aws s3 cp s3://files4ec2access/jetsonsKitchen.jpg /home/ec2-user/jetsonsKitchen.jpg
       Tags:
         - Key: Name
@@ -81,7 +83,7 @@ Resources:
       IpProtocol: tcp
       FromPort: 22
       ToPort: 22
-      SourceSecurityGroupId: !GetAtt SecurityGroupPublic.GroupId
+      SourceSecurityGroupId: !GetAtt SecurityGroupPublic.GroupId # lookup why
 
 # ----------------- IAM ROLE FOR EC2 ----------------------
 
@@ -124,6 +126,31 @@ Resources:
   #   Properties:
   #     #[...]
       
+
+
+# https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-authentication.html#aws-resource-authentication-examples
+#   MyInstance: 
+#     Type: AWS::EC2::Instance # private instance
+#     Metadata:
+#      # AWS::CloudFormation::Authentication: 
+# # 				S3Auth: 
+# # 					type: "S3"
+# # 					buckets: 
+# # 						- "myBucket"
+# # 					roleName: 
+# # 						Ref: "myRole"
+#       AWS::CloudFormation::Init: 
+#         config: 
+#           files:
+# 						"/jetsonsKitchen.jpg":
+# 							source: https://files4ec2access.s3-us-west-2.amazonaws.com/jetsonsKitchen.jpg
+# 							# authentication: "S3Auth"
+#     Properties:
+# 		 #[...] 
+# 			UserData:
+# 			'Fn::Base64': !Sub |
+# 			#!/usr/bin/env bash
+# 			/opt/aws/bin/cfn-init -v --resource MyInstance --region ${AWS::Region} --stack ${AWS::StackName}
         
 
 
