@@ -3,7 +3,7 @@ Resources:
     Type: AWS::EC2::Instance
     Properties:
       InstanceType: t2.micro
-      ImageId: ami-43874721 # Amazon Linux AMI in Sydney
+      ImageId: ami-0ce21b51cb31a48b8
       Tags:
         - Key: Name
           Value: A simple example
