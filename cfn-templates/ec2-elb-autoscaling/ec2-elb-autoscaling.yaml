@@ -182,27 +182,24 @@ Resources:
 # ============ AutoScaling Group ============
 # What kind of instances should I make? See Launch template
  
-  # PGAutoScalingGroup:
-  #   Type: AWS::AutoScaling::AutoScalingGroup
-  #   Properties:
-  #     AutoScalingGroupName: Autoscaling-PG-ASG
-  #     Cooldown: '300'
-  #     LaunchTemplate: 
-  #       LaunchTemplateId: !Ref PGLaunchTemplate
-  #       Version: !GetAtt PGLaunchTemplate.LatestVersionNumber
-  #     MaxSize: !Ref AutoScalingMaxInstances
-  #     MinSize: !Ref AutoScalingMinInstances
-  #     ServiceLinkedRoleARN: !FindInMap [AccountMap, !Ref 'AWS::AccountId', serviceRoleArn]
-  #     TargetGroupARNs:
-  #       - !Ref EC2TargetGroup
-  #     Tags:
-  #       - Key: Name
-  #         Value: Autoscaling-PG-ASG
-  #         PropagateAtLaunch: true
-  #       - Key: Environment
-  #         Value: !FindInMap [AccountMap, !Ref 'AWS::AccountId', Tag]
-  #         PropagateAtLaunch: true
-  #     VPCZoneIdentifier:
-  #       - !FindInMap [AccountMap, !Ref 'AWS::AccountId', pvtSubnet1]
-  #       - !FindInMap [AccountMap, !Ref 'AWS::AccountId', pvtSubnet2]
-  #       - !FindInMap [AccountMap, !Ref 'AWS::AccountId', pvtSubnet3]
+  AutoScalingGroup:
+    Type: AWS::AutoScaling::AutoScalingGroup
+    Properties:
+      AutoScalingGroupName: Autoscaling-Group
+      Cooldown: '300'
+      LaunchTemplate: 
+        LaunchTemplateId: !Ref LaunchTemplate
+        Version: !GetAtt LaunchTemplate.LatestVersionNumber
+      MaxSize: '5'
+      MinSize: '1'
+      # ServiceLinkedRoleARN: # not sure what goes here just yet.
+      TargetGroupARNs:
+        - !Ref EC2TargetGroup
+      Tags:
+        - Key: Name
+          Value: Autoscaling-Group
+          PropagateAtLaunch: true
+      VPCZoneIdentifier:
+          - subnet-0e5cf9a76296106e4 # main private 2a
+          - subnet-01616a8da01421e72 # main private 2b
+          - subnet-0ab36c8716c0bdae6 # main private 2c
