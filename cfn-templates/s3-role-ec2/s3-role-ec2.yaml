@@ -4,7 +4,8 @@ Description: Creates public/private instances and SGs within a pre-built VPC.
 # ----------------- TO DO ----------------------
 
 # [x] 2 EC2 instances- public jumpbox, and private webserver. 
-# [x] use cfn-init on the private instance
+# [x] use USER DATA on the private instance
+# [ ] use cfn-init on the private instance
 # [x] Create IAM role for EC2
 # [x] Create EC2 instance profile for private instance
 # [x] Test - should see file from bucket on EBS Vol
@@ -18,12 +19,12 @@ Resources:
     Type: 'AWS::EC2::Instance'
     Properties:
       InstanceType: t3.micro
-      ImageId: ami-0ce21b51cb31a48b8
+      ImageId: ami-0ce21b51cb31a48b8 # constant
       KeyName: MyUSWest2KP
-      SubnetId: subnet-06fd64678dff8d3b8 # public subnet
+      SubnetId: subnet-0cadcf79b0e56284f # public subnet hardcoded from AWS
       Tags: 
         - Key: Name
-          Value: week4-public-instance
+          Value: cfn-public-instance
       SecurityGroupIds:
         - !Ref SecurityGroupPublic
 
@@ -33,15 +34,15 @@ Resources:
       InstanceType: t3.micro
       ImageId: ami-0ce21b51cb31a48b8 
       KeyName: MyUSWest2KP
-      SubnetId: subnet-086d2f36145eda3d3 # private subnet.
+      SubnetId: subnet-0e5cf9a76296106e4 # private subnet hardcoded from AWS
       IamInstanceProfile: !Ref InstanceProfile #Allows downloading from S3
-      UserData: 
-        Fn::Base64: !Sub | 
-          #! /usr/bin/env bash
-          aws s3 cp s3://files4ec2access/jetsonsKitchen.jpg /home/ec2-user/jetsonsKitchen.jpg
+      # UserData: 
+      #   Fn::Base64: !Sub |  # hardcoded command from info from AWS S3 bucket already created. 
+      #     #! /usr/bin/env bash
+      #     aws s3 cp s3://files4ec2access/jetsonsKitchen.jpg /home/ec2-user/jetsonsKitchen.jpg 
       Tags:
         - Key: Name
-          Value: week4-private-instance
+          Value: cfn-private-instance
       SecurityGroupIds:
         - !Ref SecurityGroupPrivate 
 
@@ -51,7 +52,7 @@ Resources:
     Properties:
       GroupName: public-security-group
       GroupDescription: An SG that holds a public instance.
-      VpcId: vpc-01514eb507db3e20a
+      VpcId: vpc-03e32f396ed45c393 # hardcoded from AWS
       Tags: 
         - Key: Name
           Value: sg-public
@@ -63,7 +64,7 @@ Resources:
       IpProtocol: tcp 
       FromPort: 22
       ToPort: 22
-      CidrIp: 24.18.21.111/32 # My IP
+      CidrIp: 24.18.21.111/32 # My, Julie E's, IP
 
 # ----------------- PRIVATE Security Group CREATION and RULES ----------------------
   SecurityGroupPrivate:
@@ -71,7 +72,7 @@ Resources:
     Properties:
       GroupName: private-security-group
       GroupDescription: An SG that holds a private instance.
-      VpcId: vpc-01514eb507db3e20a
+      VpcId: vpc-03e32f396ed45c393 # hardcoded from AWS
       Tags: 
         - Key: Name
           Value: sg-private
@@ -100,7 +101,7 @@ Resources:
             Action:
               - 'sts:AssumeRole'
       Path: /
-      Policies: # What is this role allowed to access. INLINE POLICY
+      Policies: # INLINE POLICY, What is this role allowed to access? 
         - PolicyName: ec2-gets-s3
           PolicyDocument:
             Version: 2012-10-17
@@ -108,7 +109,7 @@ Resources:
               - Effect: Allow
                 Action: 's3:GetObject' # what you can do 
                 Resource: 'arn:aws:s3:::files4ec2access/*' # which bucket to access
-  InstanceProfile: # EC2 specific -- THIS IS THE WAY WE ATTACH 
+  InstanceProfile: # EC2 specific -- THIS IS THE WAY WE ATTACH the role to the instance. 
     Type: 'AWS::IAM::InstanceProfile'
     Properties:
       Path: /
