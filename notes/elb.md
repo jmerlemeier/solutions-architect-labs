@@ -62,3 +62,25 @@ echo "<html><h1>This is WebServer01</h1></html>" > index.html
 8. Look at target status...wait for it t go from 'initial' to 'healthy'.
 9. Go back to Load Balancer and look at listener and rules:
     ![listener](../assets/loadbalancerlistener.png)
+
+<!-- CloudForamtion Template -->
+
+```yaml
+Type: AWS::ElasticLoadBalancingV2::LoadBalancer
+Properties: 
+  IpAddressType: String
+  LoadBalancerAttributes: 
+    - LoadBalancerAttribute
+  Name: String
+  Scheme: String
+  SecurityGroups: 
+    - String
+  SubnetMappings: 
+    - SubnetMapping
+  Subnets: 
+    - String
+  Tags: 
+    - Tag
+  Type: String
+```
+

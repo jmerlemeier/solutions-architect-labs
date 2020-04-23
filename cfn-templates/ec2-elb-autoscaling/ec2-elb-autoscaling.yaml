@@ -1,0 +1,208 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: Using information from a VPC, creates 2 associated Security Groups, an Application Load Balancer, an Autoscaling Group, and a Launch Template. 
+
+# -------------- TODO -----------------
+#  [x] Add load balancer to EC2 configuration from Week 4
+#  [ ] Refactor EC2 config to an AutoScaling Group and Launch template (scale out on CPU utlization)
+#  [ ] Deploy Template
+
+
+Resources:
+# ----------------- INSTANCES ----------------------
+  PublicInstance: 
+    Type: 'AWS::EC2::Instance'
+    Properties:
+      InstanceType: t3.micro
+      ImageId: ami-0ce21b51cb31a48b8 # constant
+      KeyName: MyUSWest2KP
+      SubnetId: subnet-0cadcf79b0e56284f # public subnet hardcoded from AWS
+      Tags: 
+        - Key: Name
+          Value: cfn-public-instance
+      SecurityGroupIds:
+        - !Ref SecurityGroupPublic
+
+  PrivateInstance:
+    Type: 'AWS::EC2::Instance'
+    Properties:
+      InstanceType: t3.micro
+      ImageId: ami-0ce21b51cb31a48b8 
+      KeyName: MyUSWest2KP
+      SubnetId: subnet-0e5cf9a76296106e4 # private subnet hardcoded from AWS
+      IamInstanceProfile: !Ref InstanceProfile #Allows downloading from S3
+      # UserData: 
+      #   Fn::Base64: !Sub |  # hardcoded command from info from AWS S3 bucket already created. 
+      #     #! /usr/bin/env bash
+      #     aws s3 cp s3://files4ec2access/jetsonsKitchen.jpg /home/ec2-user/jetsonsKitchen.jpg 
+      Tags:
+        - Key: Name
+          Value: cfn-private-instance
+      SecurityGroupIds:
+        - !Ref SecurityGroupPrivate 
+
+# ----------------- PUBLIC Security Group CREATION and RULES ----------------------
+  SecurityGroupPublic:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupName: public-security-group
+      GroupDescription: An SG that holds a public instance.
+      VpcId: vpc-03e32f396ed45c393 # hardcoded from AWS
+      Tags: 
+        - Key: Name
+          Value: sg-public
+
+  SecurityGroupPublicIngressRuleSSH:
+    Type: AWS::EC2::SecurityGroupIngress
+    Properties:
+      GroupId: !Ref SecurityGroupPublic
+      IpProtocol: tcp 
+      FromPort: 22
+      ToPort: 22
+      CidrIp: 24.18.21.111/32 # My, Julie E's, IP
+
+# ----------------- PRIVATE Security Group CREATION and RULES ----------------------
+  SecurityGroupPrivate:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupName: private-security-group
+      GroupDescription: An SG that holds a private instance.
+      VpcId: vpc-03e32f396ed45c393 # hardcoded from AWS
+      Tags: 
+        - Key: Name
+          Value: sg-private
+      
+  SecurityGroupPrivateIngressRuleSSH:
+    Type: AWS::EC2::SecurityGroupIngress 
+    Properties:
+      GroupId: !Ref SecurityGroupPrivate
+      IpProtocol: tcp
+      FromPort: 22
+      ToPort: 22
+      SourceSecurityGroupId: !GetAtt SecurityGroupPublic.GroupId # lookup why
+
+# ----------------- IAM ROLE FOR EC2 ----------------------
+
+  Role4EC2:
+    Type: 'AWS::IAM::Role'
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+              - ec2.amazonaws.com
+            Action:
+              - 'sts:AssumeRole'
+      Path: /
+      Policies: # INLINE POLICY, What is this role allowed to access? 
+        - PolicyName: ec2-gets-s3
+          PolicyDocument:
+            Version: 2012-10-17
+            Statement:
+              - Effect: Allow
+                Action: 's3:GetObject' # what you can do 
+                Resource: 'arn:aws:s3:::files4ec2access/*' # which bucket to access
+  InstanceProfile: # EC2 specific -- THIS IS THE WAY WE ATTACH the role to the instance. 
+    Type: 'AWS::IAM::InstanceProfile'
+    Properties:
+      Path: /
+      Roles:
+        - !Ref Role4EC2
+
+
+# ============ Application Load Balancer ============
+# Can I get the load balancer to route traffic to my instances.
+  ApplicationLoadBalancer:
+    Type: AWS::ElasticLoadBalancingV2::LoadBalancer
+    Properties: 
+        IpAddressType: ipv4
+        Name: ProjectLoadBalancer
+        Scheme: internet-facing
+        SecurityGroups: 
+          - !Ref SecurityGroupPrivate
+        Subnets: 
+          - subnet-0e5cf9a76296106e4 # main private 2a
+          - subnet-01616a8da01421e72 # main private 2b
+          - subnet-0ab36c8716c0bdae6 # main private 2c
+        Tags: 
+          - Key: Name
+            Value: Autoscaling-LoadBalancer
+        Type: application
+
+  # ---------- LISTENER ---------
+
+  ALBListener:
+    Type: AWS::ElasticLoadBalancingV2::Listener
+    Properties:
+      DefaultActions:
+        - Type: forward
+          TargetGroupArn: !Ref EC2TargetGroup
+      LoadBalancerArn: !Ref ApplicationLoadBalancer
+      Port: 80
+      Protocol: HTTP
+
+  # ---------- Target Group ---------
+
+  EC2TargetGroup:
+    Type: AWS::ElasticLoadBalancingV2::TargetGroup
+    Properties:
+      HealthCheckIntervalSeconds: 30
+      HealthCheckProtocol: HTTP
+      HealthCheckTimeoutSeconds: 15
+      HealthyThresholdCount: 5
+      Matcher:
+        HttpCode: '200'
+      Name: EC2TargetGroup
+      Port: 80
+      Protocol: HTTP
+      TargetGroupAttributes:
+        - Key: deregistration_delay.timeout_seconds
+          Value: '20'
+      UnhealthyThresholdCount: 3
+      VpcId: vpc-03e32f396ed45c393
+      Tags:
+        - Key: Name
+          Value: Autoscaling-LoadBalancer
+
+ # ============ Launch Template ============
+  PGLaunchTemplate:
+    Type: AWS::EC2::LaunchTemplate
+    Properties:
+      LaunchTemplateName: WebserverLaunchTemplate
+      LaunchTemplateData: 
+        IamInstanceProfile: 
+          Arn: !GetAtt InstanceProfile.Arn
+        ImageId: ami-0ce21b51cb31a48b8 # constant
+        InstanceType: t3.micro #hardcoded
+        KeyName: MyUSWest2KP #hardcoded
+        SecurityGroupIds: 
+          - !Ref SecurityGroupPrivate 
+
+# ============ AutoScaling Group ============
+# What kind of instances should I make? See Launch template
+ 
+  # PGAutoScalingGroup:
+  #   Type: AWS::AutoScaling::AutoScalingGroup
+  #   Properties:
+  #     AutoScalingGroupName: Autoscaling-PG-ASG
+  #     Cooldown: '300'
+  #     LaunchTemplate: 
+  #       LaunchTemplateId: !Ref PGLaunchTemplate
+  #       Version: !GetAtt PGLaunchTemplate.LatestVersionNumber
+  #     MaxSize: !Ref AutoScalingMaxInstances
+  #     MinSize: !Ref AutoScalingMinInstances
+  #     ServiceLinkedRoleARN: !FindInMap [AccountMap, !Ref 'AWS::AccountId', serviceRoleArn]
+  #     TargetGroupARNs:
+  #       - !Ref EC2TargetGroup
+  #     Tags:
+  #       - Key: Name
+  #         Value: Autoscaling-PG-ASG
+  #         PropagateAtLaunch: true
+  #       - Key: Environment
+  #         Value: !FindInMap [AccountMap, !Ref 'AWS::AccountId', Tag]
+  #         PropagateAtLaunch: true
+  #     VPCZoneIdentifier:
+  #       - !FindInMap [AccountMap, !Ref 'AWS::AccountId', pvtSubnet1]
+  #       - !FindInMap [AccountMap, !Ref 'AWS::AccountId', pvtSubnet2]
+  #       - !FindInMap [AccountMap, !Ref 'AWS::AccountId', pvtSubnet3]

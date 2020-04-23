@@ -1,4 +1,4 @@
-#Procedure for Auto Scaling Groups
+# Procedure for Auto Scaling Groups
 
 ## Procedure
 1. Click 'Launch Configurations' under Auto Scaling on Left Margin.
@@ -24,3 +24,30 @@ AutoScaling...
    11. When finished, delete autoscaling group - instances will be terminated. 
    
    ![autoscale](../assets/autoscaleconfig.png)
+
+<!-- CloudFormatiob Template -->
+```yaml
+myASG: 
+  Type: AWS::AutoScaling::AutoScalingGroup
+  Properties: 
+    AvailabilityZones: 
+      Fn::GetAZs: ""
+    LaunchConfigurationName: 
+      Ref: "myLaunchConfig"
+    MinSize: "1"
+    MaxSize: "4"
+    LoadBalancerNames: 
+      - Ref: "myLoadBalancer"
+    MetricsCollection: 
+      - Granularity: "1Minute"
+        Metrics: 
+          - "GroupMinSize"
+          - "GroupMaxSize"
+    Tags:
+      - Key: Environment
+        Value: Production
+        PropagateAtLaunch: "true"
+      - Key: Purpose
+        Value: WebServerGroup
+        PropagateAtLaunch: "false"
+```
